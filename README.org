@@ -1,0 +1,6 @@
+# emacs-configs
+
+This is a group of emacs configurations I have worked on from my
+time. JMacs is my personal configuration, while writermacs is a
+configuration that I believe will work well for writers.
+** Installation
