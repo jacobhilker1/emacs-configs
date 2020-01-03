@@ -3,4 +3,13 @@
 This is a group of emacs configurations I have worked on from my
 time. JMacs is my personal configuration, while writermacs is a
 configuration that I believe will work well for writers.
+
+** Goals of this Repo
+   - To provide multiple emacs configurations for people to experiment with.
+   - To help new users to Emacs become comfortable with the software,
+     as well as to help me learn about organizing my config files.
 ** Installation
+   To install a particular config, copy the particular folder you want
+   to use to your `~/.emacs.d/` folder. On Linux, you would need
+   to use the `-r` option.
+
