@@ -10,6 +10,6 @@ configuration that I believe will work well for writers.
      as well as to help me learn about organizing my config files.
 ** Installation
    To install a particular config, copy the particular folder you want
-   to use to your ```~/.emacs.d/``` folder. On Linux, you would need
-   to use the ```-r``` option.
+   to use to your ``` ~/.emacs.d/ ``` folder. On Linux, you would need
+   to use the ``` -r ``` option.
 
