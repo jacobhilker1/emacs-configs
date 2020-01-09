@@ -1,7 +1,9 @@
 # emacs-configs
 
-This is a group of emacs configurations I have worked on from my time. JMacs is my personal configuration, while writermacs is a configuration that I believe will work well for writers.
-
+This is a group of emacs configurations I have worked on from my
+time. JMacs is my personal configuration, while writermacs is a
+configuration that I believe will work well for writers. Macsworn is a
+configuration specifically for playing [[https://www.ironswornrpg.com][Ironsworn]], and Minmacs is a minimalistic configuration of emacs, with spacemacs keybindings.
 ** Goals of this Repo
    - To provide multiple emacs configurations for people to experiment with.
    - To help new users to Emacs become comfortable with the software, as well as to help me learn about organizing my config files.

@@ -15,7 +15,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(imenu-list-position (quote left))
- '(package-selected-packages (quote (wc-mode general which-key use-package))))
+ '(package-selected-packages
+   (quote
+    (org-edit-latex toc-org wc-mode general which-key use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
