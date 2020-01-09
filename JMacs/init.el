@@ -15,6 +15,11 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(imenu-list-position (quote left))
+ '(inhibit-startup-screen t)
+ '(org-agenda-files
+   (quote
+    ("~/Documents/test.org" "~/Dropbox/agendas/school.org" "~/Dropbox/agendas/home.org" "~/Dropbox/agendas/ironsworn.org")))
+ '(org-super-agenda-mode t)
  '(package-selected-packages
    (quote
     (org-edit-latex toc-org wc-mode general which-key use-package))))

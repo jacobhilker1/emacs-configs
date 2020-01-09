@@ -3,6 +3,11 @@ Welcome to JMacs! This is a my personal configuration of emacs, for
 solo RPG campaigns like [[https://www.ironswornrpg.com/][Ironsworn]], writing (both prose and code), and
 for general use. I have organized this file into different sections,
 such as the functions I use, the UI settings, etc.
+** Agenda File Setup
+   Here I am setting up the agenda file.
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-files (quote ("~/Dropbox/agendas/school.org")))
+#+END_SRC
 * Package Initialization and Bootstrapping
 ** Package Initialization and Extra Sources
 I am adding extra sources to my package archives here.
@@ -14,7 +19,7 @@ I am adding extra sources to my package archives here.
                          ("gnu"   . "http://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
 (package-initialize)
-#+END_SRC 
+#+END_SRC
 ** Bootstrapping
 Here is where I am using the bootstrapping with use-package.
 
@@ -226,19 +231,6 @@ functions with richer versions. Let’s install it!
     :ensure t)
     #+END_SRC
 ** Org Packages
-*** Org
-I want to keep org-mode as up to date as I can.
-#+BEGIN_SRC emacs-lisp
-(use-package org
-  :ensure org-plus-contrib
-  :pin org
-  :defer t)
-
-;; Ensure ELPA org is prioritized above built-in org.
-(require 'cl)
-(setq load-path (remove-if (lambda (x) (string-match-p "org$" x)) load-path))
-#+END_SRC
-
 *** Org Bullets
 This allows for better org-mode bullets.
 #+BEGIN_SRC emacs-lisp
@@ -295,9 +287,9 @@ Here is a way I can use "y" or "n" to answer yes or no.
 ** File Types and Modes
 *** File Types
 **** Org Mode File Types
-I want to load novel (*.nvl), novel characters (*.chrs), character
-sheet (*.chr), campaign (*.cmp), and AAR (*.aar) files as org-mode
-files.
+I want to load novel (.nvl), novel characters (.chrs), character sheet
+(.chr), campaign (.cmp), AAR (.aar), and novel outline (.otl) files as
+org-mode files.
 
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
@@ -306,8 +298,13 @@ files.
   (add-to-list 'auto-mode-alist '("\\.cmp\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.chr\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.aar\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.otl\\'" . org-mode))
 #+END_SRC
 
+**** Visual Line Mode 
+     #+BEGIN_SRC emacs-lisp
+     (add-hook 'org-mode-hook 'visual-line-mode)
+     #+END_SRC
 *** Modes
 **** Org-Bullet and Super Agenda Mode
 #+BEGIN_SRC emacs-lisp
@@ -343,9 +340,15 @@ I always want to use doom modeline.
 ;(ivy-rich-mode 1)
 #+END_SRC
 
-** ELPY for python and BBC-Mode for bbc
+** ELPY for python and BBC-Mode for BBCode 
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'python-mode 'elpy-mode)
+   (add-to-list 'auto-mode-alist '("\\.bbc\\'" . bbcode-mode)) 
+ #+END_SRC
 ** Org-Super-Agenda Config
+#+BEGIN_SRC emacs-lisp
 
+#+END_SRC
 * Keybindings
 Here is a list of all keybindings in JMacs.
 ** General Keybindings
@@ -394,7 +397,17 @@ Here is a list of general purpose keybindings using General.el.
    "feD" 'edit-emacs-config
    "ff"  'counsel-find-file
    "fs"  'save-buffer
-;; Packages
+   "f" '(:ignore t :which-key "Files")
+   "fe" '(:ignore t :which-key "Edit file")
+   "feD" 'edit-emacs-config
+   "fE" '(:ignore t :which-key "Eval file")
+   "fEr" 'eval-region
+   "fEb" 'eval-buffer
+   "fEd" 'eval-defun
+   "ff"  'counsel-find-file
+   "fs"  'save-buffer
+
+   ;; Packages
    "p" '(:ignore t :which-key "Packages")
    "pl" 'package-list-packages
    "pr" 'package-refresh-contents
@@ -402,13 +415,16 @@ Here is a list of general purpose keybindings using General.el.
    "pI" 'package-initialize
    "pd" 'package-delete
 
-;; Org-Mode
-"o" '(:ignore t :which-key "Org Menu")
-"os" 'org-save-all-org-buffers
-"oa" 'org-agenda 
-"ov" 'org-agenda-show
-
-;; Magit
+   ;; Org-Mode
+   "o" '(:ignore t :which-key "Org Menu")
+   "os" 'org-schedule
+   "oS" 'org-save-all-org-buffers
+   "oa" 'org-agenda
+   "on" 'org-shiftright
+   "op" 'org-shiftleft
+   "od" 'org-deadline
+   "oc" 'org-cycle-agenda-files
+   ;; Magit
    "g" '(:ignore t :which-key "Magit")
    "gs" 'magit-status
    "gS" 'magit-stage-file
@@ -470,6 +486,11 @@ like in regular org mode.
   "TAB" 'evil-toggle-fold)
 #+END_SRC 
 
+** UI Keybindings
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-+") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+#+END_SRC
 * UI
 ** Minimalistic UI
 Here is where I make my UI as minimalistic as possible. I am disabling
@@ -488,8 +509,15 @@ Here is where I disable the leading headers in org-bullets-mode.
 (setq-default org-hide-leading-stars t)
 ;(setq-default org-ellipsis "⤵")
 (setq org-src-fontify-natively t)  
-#+END_SRC
+(setq org-hide-emphasis-markers t)
 
+
+(font-lock-add-keywords 'org-mode
+                        '(("^ +\\([-*]\\) "
+                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+(setq-default org-bullets-bullet-list 
+'("⚫" "○")) 
+#+END_SRC
 ** Fonts and Themes
 *** Fonts
 I often switch between DejaVu Sans Pro, Fira Code, Monaco, and Source
@@ -500,7 +528,7 @@ switch between it by commenting out the other fonts.
 
 
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default t :font "Inconsolata-12")
+(set-face-attribute 'default t :font "Source Code Pro-12")
 ; (setq solarized-use-variable-pitch nil)
 
  ;   (setq solarized-scale-org-headlines nil)
@@ -577,7 +605,7 @@ programming.
 
 ** Prose Smart-Mode-Line Config
 
-   #+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
    ;(setq-default sml/no-confirm-load-theme t)
    ;(sml/setup)
    ;(sml/apply-theme 'respectful)
