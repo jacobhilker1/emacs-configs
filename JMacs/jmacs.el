@@ -62,18 +62,25 @@
 :ensure t)
 
 (use-package yasnippet
-:ensure t)
+:ensure t
+:config
+(yas-global-mode t))
 (use-package yasnippet-snippets
 :ensure t)
 
 (use-package restart-emacs
 :ensure t)
 
+(use-package slack
+:ensure t)
+
+(use-package csv-mode
+:ensure t)
+(add-to-list 'auto-mode-alist '("\\.csv\\'" . csv-mode))
+
 (use-package doom-themes
 :ensure t)
 
-(use-package color-theme-solarized
-:ensure t)
 (use-package solarized-theme
 :ensure t)
 
@@ -109,13 +116,44 @@
 (use-package swiper
   :commands (swiper swiper-all))
 
-(use-package auto-complete
-:ensure t)
+(use-package company
+:ensure t
+:config
+(add-hook 'after-init-hook 'global-company-mode))
 
 (use-package elpy
 :ensure t)
 
 (use-package bbcode-mode
+:ensure t)
+
+(use-package js2-mode
+    :ensure t)
+    (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+    ;; Better imenu
+    (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+    (use-package js2-refactor
+    :ensure t)
+    (use-package xref-js2
+    :ensure t)
+
+(add-hook 'js2-mode-hook #'js2-refactor-mode)
+(js2r-add-keybindings-with-prefix "C-c C-r")
+(define-key js2-mode-map (kbd "C-k") #'js2r-kill)
+
+;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
+;; unbind it.
+(define-key js-mode-map (kbd "M-.") nil)
+
+(add-hook 'js2-mode-hook (lambda ()
+  (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+
+(use-package flycheck
+:ensure t
+:config
+(add-hook 'prog-mode-hook 'flycheck-mode))
+
+(use-package lorem-ipsum
 :ensure t)
 
 (use-package org-bullets
@@ -127,6 +165,15 @@
   :init (add-hook 'org-mode-hook #'toc-org-enable))
 
 (use-package org-super-agenda
+:ensure t
+:config
+(add-hook 'org-mode-hook 'org-super-agenda-mode)
+:after
+(let ((org-super-agenda-groups
+     '((:auto-category t))))
+(org-agenda-list)))
+
+(use-package ox-mediawiki
 :ensure t)
 
 (defun edit-emacs-config ()
@@ -148,6 +195,13 @@
   (let* ((available-width (- (window-width) (length left) 2)))
     (format (format " %%s %%%ds " available-width) left right)))
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+(setq-default initial-major-mode 'org-mode)
+
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.nvl\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.chrs\\'" . org-mode))
@@ -162,12 +216,13 @@
 (add-hook 'org-mode-hook 'org-bullets-mode)
 (add-hook 'org-mode-hook 'org-super-agenda-mode)
 (add-hook 'org-mode-hook 'flyspell-mode)
+(add-hook 'org-mode-hook 'toc-org-mode)
+(setq-default org-list-allow-alphabetical t)
 
 (add-hook 'org-mode-hook 'wc-mode)
 (add-hook 'org-mode-hook 'decide-mode)
 
-(global-auto-complete-mode 1)
-(setq-default auto-complete-mode 1)
+(setq-default global-company-mode 1)
 (setq-default yas-minor-mode 1)
 
 (setq-default doom-modeline-mode 1)
@@ -175,10 +230,12 @@
 ;(rich-minority-mode 1)
 ;(ivy-rich-mode 1)
 
+(display-battery-mode t)
+
+(electric-pair-mode t)
+
 (add-hook 'python-mode 'elpy-mode)
 (add-to-list 'auto-mode-alist '("\\.bbc\\'" . bbcode-mode))
-
-
 
 (general-define-key
    :states '(normal visual insert emacs)
@@ -191,7 +248,8 @@
     "h"   (general-simulate-key "C-h")
     "u"   (general-simulate-key "C-u")
     "x"   (general-simulate-key "C-x")
-    
+    ;; Auto Complete
+    "TAB" 'company-complete
    ;; quit commands  
    "q" '(:ignore t :which-key "quit emacs")
    "qq"  'kill-emacs
@@ -209,8 +267,8 @@
     "bw"  'wordCount
 ;; Window commands
    "w"  '(:ignore t :which-key "Windows")
-   "w-" 'split-window-right
-   "w|" 'split-window-below
+   "wh" 'split-window-right
+   "wv" 'split-window-below
    "wn" 'other-window
    "wd"  'delete-window
    "wD"  'delete-other-windows
@@ -245,10 +303,20 @@
    "os" 'org-schedule
    "oS" 'org-save-all-org-buffers
    "oa" 'org-agenda
+   "oA" 'org-agenda-fortnight-view
    "on" 'org-shiftright
    "op" 'org-shiftleft
    "od" 'org-deadline
-   "oc" 'org-cycle-agenda-files
+   "oc" '(:ignore t :which-key "cycle")
+   "oca" 'org-cycle-agenda-files
+   "ot" '(:ignore t :which-key "toggle")
+   "oti" 'org-toggle-inline-images
+   "otc" 'org-toggle-checkbox
+   "oT" 'org-todo
+   "oi" '(:ignore t :which-key "insert")
+   "oit" 'toc-org-insert-toc
+   "oiT" 'org-time-stamp
+	 "oe" 'org-export-dispatch
    ;; Magit
    "g" '(:ignore t :which-key "Magit")
    "gs" 'magit-status
@@ -282,7 +350,10 @@
    "My" 'yas-minor-mode 
    "MW" 'writegood-mode
    "Mf" 'flyspell-mode
-
+   "MF" 'flycheck-mode
+   "Mc" 'company-mode
+   "Md" 'decide-mode
+   "Mt" 'toc-org-mode
 ;; YaSnippet Shortcuts
 "y" '(:ignore t :which-key "Yasnippet")
 "yn" 'yas-new-snippet
@@ -292,11 +363,18 @@
 ;; Spell-check
 "s" '(:ignore t :which-key "Spell Check")
 "sn" 'flyspell-goto-next-error
-"sb" 'flyspell-buffer
+"sb" 'ispell-buffer
 "sc" 'flyspell-correct-word-before-point  
 "st" 'ispell-minor-mode
 
+;; Slack
+"S" '(:ignore t :which-key "Slack")
 
+;; Lorem Ipsum
+"l" '(:ignore t :which-key "Lorem Ipsum")
+"ll" 'lorem-ipsum-insert-lists
+"ls" 'lorem-ipsum-insert-sentences
+"lp" 'lorem-ipsum-insert-paragraphs
 )
 
 (general-define-key
@@ -305,6 +383,10 @@
 
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
+
+(general-define-key
+:states  'insert
+"TAB" 'company-complete)
 
 (scroll-bar-mode -1)
 (tool-bar-mode   -1)
@@ -321,9 +403,12 @@
                         '(("^ +\\([-*]\\) "
                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 (setq-default org-bullets-bullet-list 
-'("⚫" "○"))
+'("⚫" "○")) 
 
-(set-face-attribute 'default t :font "Source Code Pro-12")
+(setq-default tab-width 4)
+(setq-default org-list-indent-offset 4)
+
+(set-face-attribute 'default t :font "Inconsolata-12")
 ; (setq solarized-use-variable-pitch nil)
 
  ;   (setq solarized-scale-org-headlines nil)
@@ -342,10 +427,22 @@
 ;(load-theme 'doom-material t)
 ;(load-theme 'doom-nord t)
 ;(setq solarized-termcolors 256)
-;(load-theme 'solarized-dark t)
+
+;; ;; Solarized Config
+;; (setq solarized-use-variable-pitch nil)
+
+;;     (setq solarized-scale-org-headlines nil)
+
+;;     (setq solarized-height-minus-1 1)
+;;     (setq solarized-height-plus-1 1)
+;;     (setq solarized-height-plus-2 1)
+;;     (setq solarized-height-plus-3 1)
+;;     (setq solarized-height-plus-4 1)
+;;     (setq x-underline-at-descent-line t)
+;; (load-theme 'solarized-dark t)
 
 (setq-default header-line-format
-'(:eval (propertize (format-time-string " %d %b  %I:%M %p ")
+'(:eval (propertize (format-time-string " %d %b %I:%M %p ")
                                    'face 'font-lock-builtin-face))
 )
 
@@ -376,6 +473,18 @@
   (defun set-prose-modeline ()
     (doom-modeline-set-modeline 'prose-modeline))
   (add-hook 'org-mode-hook 'set-prose-modeline)
+
+(defvar doom-modeline-icon (display-graphic-p) )
+(setq doom-modeline-icon t)
+
+(doom-modeline-def-modeline 'prog-modeline
+'(bar buffer-info buffer-position)
+'(major-mode battery checker))
+
+(defun set-prog-modeline ()
+    (doom-modeline-set-modeline 'prog-modeline))
+(add-hook 'prog-mode-hook 'set-prog-modeline)
+(add-hook 'text-mode-hook 'set-prog-modeline)
 
 ;(setq-default sml/no-confirm-load-theme t)
 ;(sml/setup)
